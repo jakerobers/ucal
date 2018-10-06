@@ -92,7 +92,78 @@ mod get_weekdays_test {
 }
 
 #[cfg(test)]
-mod get_recur_test {
+mod parse_weekday_test {
+    use rule_parser;
+    use api::{WeekdayOption, Weekday};
+
+    #[test]
+    fn parse_weekday_with_option() {
+        let res: WeekdayOption = rule_parser::parse_weekday(&String::from("4mon"))
+            .expect("to find a weekday option");
+        assert_eq!(res.weekday, Weekday::MON);
+        assert_eq!(res.offset, 4);
+    }
+
+    #[test]
+    fn parse_weekday_no_option() {
+        let res: WeekdayOption = rule_parser::parse_weekday(&String::from("mon"))
+            .expect("to find a weekday option");
+        assert_eq!(res.weekday, Weekday::MON);
+        assert_eq!(res.offset, 0);
+    }
+
+    #[test]
+    fn parse_tue() {
+        let res: WeekdayOption = rule_parser::parse_weekday(&String::from("tue"))
+            .expect("to find a weekday option");
+        assert_eq!(res.weekday, Weekday::TUE);
+        assert_eq!(res.offset, 0);
+    }
+
+    #[test]
+    fn parse_wed() {
+        let res: WeekdayOption = rule_parser::parse_weekday(&String::from("wed"))
+            .expect("to find a weekday option");
+        assert_eq!(res.weekday, Weekday::WED);
+        assert_eq!(res.offset, 0);
+    }
+
+    #[test]
+    fn parse_thu() {
+        let res: WeekdayOption = rule_parser::parse_weekday(&String::from("thu"))
+            .expect("to find a weekday option");
+        assert_eq!(res.weekday, Weekday::THU);
+        assert_eq!(res.offset, 0);
+    }
+
+    #[test]
+    fn parse_fri() {
+        let res: WeekdayOption = rule_parser::parse_weekday(&String::from("fri"))
+            .expect("to find a weekday option");
+        assert_eq!(res.weekday, Weekday::FRI);
+        assert_eq!(res.offset, 0);
+    }
+
+    #[test]
+    fn parse_sat() {
+        let res: WeekdayOption = rule_parser::parse_weekday(&String::from("sat"))
+            .expect("to find a weekday option");
+        assert_eq!(res.weekday, Weekday::SAT);
+        assert_eq!(res.offset, 0);
+    }
+
+    #[test]
+    fn parse_sun() {
+        let res: WeekdayOption = rule_parser::parse_weekday(&String::from("sun"))
+            .expect("to find a weekday option");
+        assert_eq!(res.weekday, Weekday::SUN);
+        assert_eq!(res.offset, 0);
+    }
+}
+
+
+#[cfg(test)]
+mod parse_recur_test {
     use rule_parser;
     use api::Recur;
 

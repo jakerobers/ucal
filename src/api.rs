@@ -10,6 +10,7 @@ pub enum Recur {
 }
 
 #[derive(Debug)]
+#[derive(PartialEq)]
 pub enum Weekday {
     MON,
     TUE,
