@@ -19,19 +19,43 @@ pub fn parse_weekdays(_option: &String) -> Option<Vec<WeekdayOption>> {
  * Takes a string such as: "mon", "4thu"
  */
 pub fn parse_weekday(option: &String) -> Option<WeekdayOption> {
-    // TODO: instead, maybe create a regex and match on it
-    let option_length: usize = option.len();
+    let re = Regex::new(r"\d(mon|tue|wed|thu|fri|sat|sun)")
+        .expect("regex should be valid");
 
-    match option_length {
-        4 => {
-            None
+    let offset: u8;
+    let dow: String;
 
-        },
-        3 => {
-            None
-        },
-        _ => None
+    if re.is_match(option) {
+        let first: String = option.chars().take(1).collect();
+        offset = first.parse::<u8>().expect("offset should be a number");
+        dow = option.chars().skip(1).take(3).collect();
+    } else {
+        offset = 0;
+        dow = option.to_owned();
     }
+
+    let dow: Option<Weekday> =
+        match dow {
+            _ if dow == "mon" => Some(Weekday::MON),
+            _ if dow == "tue" => Some(Weekday::TUE),
+            _ if dow == "wed" => Some(Weekday::WED),
+            _ if dow == "thu" => Some(Weekday::THU),
+            _ if dow == "fri" => Some(Weekday::FRI),
+            _ if dow == "sat" => Some(Weekday::SAT),
+            _ if dow == "sun" => Some(Weekday::SUN),
+            _ => None
+        };
+
+    if let None = dow {
+        return None;
+    }
+
+    let dow: Weekday = dow.unwrap();
+    let weekday_option = WeekdayOption {
+        offset: offset,
+        weekday: dow
+    };
+    Some(weekday_option)
 }
 
 /**
