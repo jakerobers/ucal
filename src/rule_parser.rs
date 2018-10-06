@@ -19,11 +19,10 @@ pub fn parse_weekdays(_option: &String) -> Option<Vec<WeekdayOption>> {
  * Takes a string such as: "mon", "4thu"
  */
 pub fn parse_weekday(option: &String) -> Option<WeekdayOption> {
-    let re = Regex::new(r"\d(mon|tue|wed|thu|fri|sat|sun)")
-        .expect("regex should be valid");
-
     let offset: u8;
     let dow: String;
+    let re = Regex::new(r"\d(mon|tue|wed|thu|fri|sat|sun)")
+        .expect("regex should be valid");
 
     if re.is_match(option) {
         let first: String = option.chars().take(1).collect();
