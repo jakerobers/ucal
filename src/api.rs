@@ -30,7 +30,8 @@ pub struct WeekdayOption {
 #[derive(Debug)]
 pub struct Rule {
     pub epoch_date: NaiveDateTime,
-    pub recurring: Recur,
+    pub recurring: Option<Recur>,
     pub options: Vec<WeekdayOption>,
     pub description: String,
 }
+

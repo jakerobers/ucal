@@ -1,11 +1,53 @@
 use api::{Rule, WeekdayOption, Recur, Weekday};
-use regex::Regex;
+use regex::{Regex, Captures};
+use chrono::NaiveDateTime;
 
 /**
  * Takes a string such as: `[2018-01-01 00:00 a] New Years`
  */
-pub fn parse(_line: &String) -> Option<Rule> {
-    None
+pub fn parse(line: &String) -> Option<Rule> {
+    let schedule_re: Regex = Regex::new(r"\[(.*)\](.*)")
+        .expect("to be a regex rule");
+
+    let caps: Captures =
+        match schedule_re.captures(line) {
+            None => return None,
+            Some(caps) => caps
+        };
+    assert_eq!(caps.len(), 2, "Schedule should have format [YYYY-MM-DD hh:mm [recurring [recurring_opts]] description");
+
+    // TODO: explicitly set type
+    let schedule_parts: Vec<&str> = caps[0].split(" ").collect();
+
+    let epoch_date: NaiveDateTime =
+        match schedule_parts.get(0) {
+            Some(e) => {
+                NaiveDateTime::parse_from_str(e, "%Y-%m-%d %H:%M")
+                    .expect("DateTime to have format %Y-%m-%d %H:%M")
+            },
+            None => return None
+        };
+
+    let recurring: Option<Recur> =
+        match schedule_parts.get(1) {
+            Some(e) => parse_recur(e),
+            None => None
+        };
+
+    let options: Vec<WeekdayOption> =
+        match schedule_parts.get(2) {
+            Some(e) => parse_weekdays(&e.to_string()),
+            None => vec![]
+        };
+
+    let description: String = caps[1].to_string();
+
+    Some(Rule {
+        epoch_date: epoch_date,
+        recurring: recurring,
+        options: options,
+        description: description
+    })
 }
 
 /**
@@ -16,7 +58,7 @@ pub fn parse_weekdays(options: &String) -> Vec<WeekdayOption> {
         return vec![];
     }
 
-    options.to_owned()
+    options
         .split(",")
         .fold(vec![], |mut acc, e| {
             if let Some(weekday_option) = parse_weekday(&e.to_owned()) {
@@ -71,12 +113,12 @@ pub fn parse_weekday(option: &String) -> Option<WeekdayOption> {
 /**
  * Takes a string such as: "a", "m", "w", "d"
  */
-pub fn parse_recur(option: &String) -> Option<Recur> {
+pub fn parse_recur(option: &str) -> Option<Recur> {
     match option {
-        _ if "a" == option => Some(Recur::ANNUALLY),
-        _ if "m" == option => Some(Recur::MONTHLY),
-        _ if "w" == option => Some(Recur::WEEKLY),
-        _ if "d" == option => Some(Recur::DAILY),
+        "a" => Some(Recur::ANNUALLY),
+        "m" => Some(Recur::MONTHLY),
+        "w" => Some(Recur::WEEKLY),
+        "d" => Some(Recur::DAILY),
         _ => None
     }
 }
@@ -213,29 +255,26 @@ mod parse_recur_test {
 
     #[test]
     fn gets_annually() {
-        let option: String = "a".to_owned();
-        let res: Recur = rule::parse_recur(&option).unwrap();
+        let res: Recur = rule::parse_recur("a").unwrap();
         assert_eq!(res, Recur::ANNUALLY);
     }
 
     #[test]
     fn gets_monthly() {
-        let option: String = "m".to_owned();
-        let res: Recur = rule::parse_recur(&option).unwrap();
+        let res: Recur = rule::parse_recur("m").unwrap();
         assert_eq!(res, Recur::MONTHLY);
     }
 
     #[test]
     fn gets_weekly() {
-        let option: String = "w".to_owned();
-        let res: Recur = rule::parse_recur(&option).unwrap();
+        let res: Recur = rule::parse_recur("w").unwrap();
         assert_eq!(res, Recur::WEEKLY);
     }
 
     #[test]
     fn gets_daily() {
         let option: String = "d".to_owned();
-        let res: Recur = rule::parse_recur(&option).unwrap();
+        let res: Recur = rule::parse_recur("d").unwrap();
         assert_eq!(res, Recur::DAILY);
     }
 }
