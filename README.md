@@ -1,10 +1,10 @@
-# Custom Date Generator
+# Unix Calendar
 
-Custom Date Generator calculates a set of dates provided a .cdg file, begin window and end window.
+Calendar calculates a set of dates provided a .ucal file.
 
 ## Usage
 
-A cdg file will have the following format:
+A .ucal file is a text file with the format:
 
 ```
 [2018-01-01 00:00 a] New Years 	# an anually recurring event labeled as "New Years"
@@ -13,10 +13,10 @@ A cdg file will have the following format:
 [2018-10-05 21:00 w mon,tue,wed,thu,fri]: Pack lunch for work 	# Recur on the weekdays
 ```
 
-Use cdg and provide it a "pane" to view your events:
+Use ucal and provide it a "pane" to view your events:
 
 ```
-cdg my_schedule.cdg --begin="2018-11-01" --end="2018-12-01"
+ucal my_schedule.ucal --begin="2018-11-01" --end="2018-12-01"
 ```
 
 Will generate:
