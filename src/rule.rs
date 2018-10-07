@@ -16,7 +16,6 @@ pub fn parse(line: &String) -> Option<Rule> {
         };
     assert_eq!(caps.len(), 2, "Schedule should have format [YYYY-MM-DD hh:mm [recurring [recurring_opts]] description");
 
-    // TODO: explicitly set type
     let schedule_parts: Vec<&str> = caps[0].split(" ").collect();
 
     let epoch_date: NaiveDateTime =
