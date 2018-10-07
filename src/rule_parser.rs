@@ -11,8 +11,19 @@ pub fn parse(_line: &String) -> Option<Rule> {
 /**
  * Takes a string such as: "mon", "4thu", "1wed,4fri", "mon,tue,wed"
  */
-pub fn parse_weekdays(_option: &String) -> Option<Vec<WeekdayOption>> {
-    None
+pub fn parse_weekdays(options: &String) -> Vec<WeekdayOption> {
+    if options.len() == 0 {
+        return vec![];
+    }
+
+    options.to_owned()
+        .split(",")
+        .fold(vec![], |mut acc, e| {
+            if let Some(weekday_option) = parse_weekday(&e.to_owned()) {
+                acc.push(weekday_option);
+            }
+            acc
+        })
 }
 
 /**
@@ -86,8 +97,30 @@ mod parse_test {
 }
 
 #[cfg(test)]
-mod get_weekdays_test {
+mod parse_weekdays_test {
+    use rule_parser;
+    use api::{WeekdayOption, Weekday};
 
+    #[test]
+    fn none_when_empty() {
+        let res = rule_parser::parse_weekdays(&String::from(""));
+        assert_eq!(res.len(), 0);
+    }
+
+    #[test]
+    fn one_option() {
+        let res: Vec<WeekdayOption> = rule_parser::parse_weekdays(&String::from("wed"));
+        assert_eq!(res[0].weekday, Weekday::WED);
+    }
+
+    #[test]
+    fn many_options() {
+        let res: Vec<WeekdayOption> = rule_parser::parse_weekdays(&String::from("2wed,thu"));
+        assert_eq!(res[0].weekday, Weekday::WED);
+        assert_eq!(res[0].offset, 2);
+        assert_eq!(res[1].weekday, Weekday::THU);
+        assert_eq!(res[1].offset, 0);
+    }
 }
 
 #[cfg(test)]
@@ -157,6 +190,18 @@ mod parse_weekday_test {
             .expect("to find a weekday option");
         assert_eq!(res.weekday, Weekday::SUN);
         assert_eq!(res.offset, 0);
+    }
+
+    #[test]
+    fn none_for_garbage() {
+        let res = rule_parser::parse_weekday(&String::from("asd"));
+        assert_eq!(res.is_none(), true);
+    }
+
+    #[test]
+    fn none_for_garbage_with_offset() {
+        let res = rule_parser::parse_weekday(&String::from("4asd"));
+        assert_eq!(res.is_none(), true);
     }
 }
 
