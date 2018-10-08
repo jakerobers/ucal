@@ -6,7 +6,7 @@ use chrono::NaiveDateTime;
  * Takes a string such as: `[2018-01-01 00:00 a]: New Years`
  */
 pub fn parse(line: &String) -> Option<Rule> {
-    let schedule_re: Regex = Regex::new(r"\[(.*)\](.*)")
+    let schedule_re: Regex = Regex::new(r"<(.*)>(.*)")
         .expect("to be a regex rule");
 
     let caps: Captures =
@@ -14,15 +14,15 @@ pub fn parse(line: &String) -> Option<Rule> {
             None => return None,
             Some(caps) => caps
         };
-    assert_eq!(caps.len(), 2, "Schedule should have format [YYYY-MM-DD hh:mm [recurring [recurring_opts]] description");
+    assert_eq!(caps.len(), 3, "Schedule should have format <YYYY-MM-DD hh:mm [recurring [recurring_opts]]>: description");
 
-    let schedule_parts: Vec<&str> = caps[0].split(" ").collect();
+    let schedule_parts: Vec<&str> = caps[1].split(" ").collect();
 
     let epoch_date: NaiveDateTime =
         match schedule_parts.get(0) {
             Some(e) => {
-                NaiveDateTime::parse_from_str(e, "%Y-%m-%d %H:%M")
-                    .expect("DateTime to have format %Y-%m-%d %H:%M")
+                NaiveDateTime::parse_from_str(e, "%Y-%m-%dT%H:%M")
+                    .expect("DateTime to have format %Y-%m-%dT%H:%M")
             },
             None => return None
         };
@@ -39,7 +39,7 @@ pub fn parse(line: &String) -> Option<Rule> {
             None => vec![]
         };
 
-    let description: String = caps[1].to_string();
+    let description: String = caps[2].to_string();
 
     Some(Rule {
         epoch_date: epoch_date,
@@ -124,16 +124,38 @@ pub fn parse_recur(option: &str) -> Option<Recur> {
 
 #[cfg(test)]
 mod parse_test {
+    use rule;
+    use api::{Rule, Recur, Weekday};
+    use chrono::NaiveDate;
+
     #[test]
-    fn returns_some_value() {
+    fn recurring_anually_rule() {
+        let res: Rule = rule::parse(&"<2018-01-01T00:00 a>: New Years".to_string())
+            .expect("to have a rule");
+
+        assert_eq!(res.epoch_date, NaiveDate::from_ymd(2018, 1, 1).and_hms(0, 0, 0));
+        assert_eq!(res.recurring.unwrap(), Recur::ANNUALLY);
+        assert_eq!(res.options.len(), 0);
+        assert_eq!(res.description, ": New Years");
     }
 
     #[test]
-    fn returns_none_for_invalid() {
+    fn none_when_invalid() {
+        let res: Option<Rule> = rule::parse(&"some invalid string".to_string());
+        assert_eq!(res.is_none(), true);
     }
 
     #[test]
-    fn returns_first_set() {
+    fn has_options() {
+        let res: Rule = rule::parse(&"<2018-11-22T00:00 a 4thu>: Thanksgiving".to_string())
+            .expect("to have a rule");
+
+        assert_eq!(res.epoch_date, NaiveDate::from_ymd(2018, 11, 22).and_hms(0, 0, 0));
+        assert_eq!(res.recurring.unwrap(), Recur::ANNUALLY);
+        assert_eq!(res.options.len(), 1);
+        assert_eq!(res.options[0].offset, 4);
+        assert_eq!(res.options[0].weekday, Weekday::THU);
+        assert_eq!(res.description, ": Thanksgiving");
     }
 }
 
@@ -272,7 +294,6 @@ mod parse_recur_test {
 
     #[test]
     fn gets_daily() {
-        let option: String = "d".to_owned();
         let res: Recur = rule::parse_recur("d").unwrap();
         assert_eq!(res, Recur::DAILY);
     }
