@@ -3,7 +3,7 @@ use regex::{Regex, Captures};
 use chrono::NaiveDateTime;
 
 /**
- * Takes a string such as: `[2018-01-01 00:00 a]: New Years`
+ * Takes a string such as: `<2018-01-01 00:00 a>: New Years`
  */
 pub fn parse(line: &String) -> Option<Rule> {
     let schedule_re: Regex = Regex::new(r"<(.*)>(.*)")
