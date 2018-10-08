@@ -1,0 +1,8 @@
+[package]
+name = "ucal"
+version = "0.1.0"
+authors = ["Jake Robers <jakerobers@gmail.com>"]
+
+[dependencies]
+chrono = "0.4"
+regex = "1"
