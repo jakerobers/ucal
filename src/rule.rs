@@ -129,6 +129,17 @@ mod parse_test {
     use chrono::NaiveDate;
 
     #[test]
+    fn no_recurring() {
+        let res: Rule = rule::parse(&"<2018-05-13T00:00>: Coffee meeting".to_string())
+            .expect("to have a rule");
+
+        assert_eq!(res.epoch_date, NaiveDate::from_ymd(2018, 5, 13).and_hms(0, 0, 0));
+        assert_eq!(res.recurring.is_none(), true);
+        assert_eq!(res.options.len(), 0);
+        assert_eq!(res.description, ": Coffee meeting");
+    }
+
+    #[test]
     fn recurring_anually_rule() {
         let res: Rule = rule::parse(&"<2018-01-01T00:00 a>: New Years".to_string())
             .expect("to have a rule");
